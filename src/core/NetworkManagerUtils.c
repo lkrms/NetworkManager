@@ -240,11 +240,11 @@ nm_utils_ppp_ip_methods_enabled(NMConnection *connection,
                                 gboolean     *out_ip6_enabled)
 {
     NM_SET_OUT(out_ip4_enabled,
-               nm_streq0(nm_utils_get_ip_config_method(connection, AF_INET),
-                         NM_SETTING_IP4_CONFIG_METHOD_AUTO));
+               !nm_streq0(nm_utils_get_ip_config_method(connection, AF_INET),
+                         NM_SETTING_IP4_CONFIG_METHOD_DISABLED));
     NM_SET_OUT(out_ip6_enabled,
-               nm_streq0(nm_utils_get_ip_config_method(connection, AF_INET6),
-                         NM_SETTING_IP6_CONFIG_METHOD_AUTO));
+               !nm_streq0(nm_utils_get_ip_config_method(connection, AF_INET6),
+                         NM_SETTING_IP6_CONFIG_METHOD_DISABLED));
 }
 
 /*****************************************************************************/
