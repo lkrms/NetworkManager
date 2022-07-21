@@ -11919,6 +11919,8 @@ activate_stage3_ip_config_for_addr_family(NMDevice *self, int addr_family, const
                                                      ip_ifindex);
                     }
                 } else {
+                    gs_free char *value = NULL;
+
                     /* When activating an IPv6 'ignore' connection we need to revert back
                      * to kernel IPv6LL, but the kernel won't actually assign an address
                      * to the interface until disable_ipv6 is bounced.
@@ -11926,6 +11928,16 @@ activate_stage3_ip_config_for_addr_family(NMDevice *self, int addr_family, const
                     _dev_addrgenmode6_set(self, NM_IN6_ADDR_GEN_MODE_EUI64);
                     _dev_sysctl_set_disable_ipv6(self, TRUE);
                     _dev_sysctl_restore_ip6_properties(self);
+
+                    /* If disable_ipv6 hasn't been bounced (e.g. because
+                     * ip6_saved_properties is empty after bringing up a virtual
+                     * device for a ppp connection), bounce it.
+                     */
+                    _LOGT_ip(addr_family, "toggling disable_ipv6 if still set");
+                    value = nm_device_sysctl_ip_conf_get(self, AF_INET6, "disable_ipv6");
+                    if (nm_streq0(value, "1")) {
+                        nm_device_sysctl_ip_conf_set(self, AF_INET6, "disable_ipv6", "0");
+                    }
                 }
             }
         } else {
